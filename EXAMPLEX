@@ -1,0 +1,37 @@
+Example simple call
+[[!PageNav? &language=`en`
+	  &element=`getResources`
+	  &parents=`[[*id]]`
+	  &depth=`3`
+	  &limit=`3`
+	  &pageLimit=`5`
+	  &sortby=`{"createdon":"DESC"}`
+	  &includeContent=`1`
+	  &tpl=`TestPub`
+]]
+[[!+pn.nav]]
+
+Example nclude cache on half an hour
+[[!PageNav? &language=`en`
+	  &element=`getResources`
+	  &parents=`[[*id]]`
+	  &depth=`3`
+	  &limit=`3`
+	  &pageLimit=`5`
+	  &sortby=`{"createdon":"DESC"}`
+	  &includeContent=`1`
+	  &tpl=`TestPub`
+	  &pageNavOutTpl=`pageNavOutTplMy`
+	  &pageNavTpl=`pageNavTplMy`
+	  &tplActive = `tplActiveMy`
+	  &classpn=`page`
+	  &classprev=`previouspostslink`
+	  &classnext=`nextpostslink`
+	  &classactive =`current`
+	  &textprev=`&nbsp;`
+	  &textnext=`&nbsp;`
+	  &separator=`<span class="more">...</span>`
+	  &cache=`true`
+	  &cache_expires = `1800`
+]]
+[[!+pn.nav]]
