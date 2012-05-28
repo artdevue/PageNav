@@ -2,4 +2,6 @@ As your database grows, showing all the results of a query on a single page is n
 
  * PageNav snippet to paginate results from your database in a clean and user friendly way.
  * With support for User Friendly URL and without. Do not create duplicates url
+
+Wiki https://github.com/artdevue/PageNav/wiki/PageNav-wiki
  
