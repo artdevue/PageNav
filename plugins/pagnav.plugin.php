@@ -1,7 +1,7 @@
 <?php
 /**
  * @package pagenav
- * @version 0.0.1-pl - May 27, 2012
+ * @version 0.0.1-beta2 - May 29, 2012
  */
   switch ($modx->event->name) {    
     case 'OnPageNotFound':

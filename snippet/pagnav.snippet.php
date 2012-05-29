@@ -20,36 +20,49 @@
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @package PageNav
- * @version 0.0.1-pl - May 27, 2012
+ * @version 0.0.1-beta2 - May 29, 2012
  */
 /**
  * PageNav snippet to paginate results from your database in a clean and user friendly way.
  *
  *  TEMPLATES
- * pageNavTpl - Name of a chunk serving as the key element of the template, default pageNavTpl
- * pageNavOutTpl - Name of a chunk serving as a general template, default pageNavOutTpl
- * tplActive - Name of a chunk serving as active item of the template, default empty, use 
- *             the basic template pageNavTpl
- * separator - Separator between the navigation unit and directions, default <li>...</li>
+ * pageNavTpl          - Name of a chunk serving as the key element of the template, default pageNavTpl
+ * pageNavOutTpl       - Name of a chunk serving as a general template, default pageNavOutTpl
+ * tplActive           - Name of a chunk serving as active item of the template, default tplActive
+ * separator     - Separator between the navigation unit and directions, default <li>...</li>
+ * 
+ *  Chunk pageNavTpl Parameters
+ * classes - class for the item
+ * href    - link for the item
+ * pageNo  - text for the item
+ * 
+ *  Chunk pageNavOutTpl Parameters
+ * navPg -         the main block paging
+ * outUlstart -    button on the top of the page
+ * outUlend -      button at the bottom of the page
+ * outUlprevios -  button on the previous page
+ * outUlnext -     button on the next page
  *
  *  CSS Class Name Parameters
- * classpn - Class for the elements of the navigation buttons, default empty
- * classprev - Сlass for elements prev buttons, default prev
- * classnext - Сlass for elements next buttons, default next
+ * classpn     - Class for the elements of the navigation buttons, default empty
+ * classprev   - Сlass for elements prev buttons, default prev
+ * classnext   - Сlass for elements next buttons, default next
  * classactive - Сlass for elements active buttons, default active
- * textprev - The caption for the button prev, default < (&lt;)
- * textnext - The caption for the button next, default > (&gt;)
- * textstart - The caption for the button start, default 1
- * textend - The caption for the button end, default total page
+ * textprev    - The caption for the button prev, default < (&lt;)
+ * textnext    - The caption for the button next, default > (&gt;)
+ * textstart   - The caption for the button start, default 1
+ * textend     - The caption for the button end, default total page
  *
  *  General Parameters
  * pageLimit - Maximum number of buttons for navigation, default 9
- * prefPles - prefix for the output placeholder navigation, default 'pn'
+ * prefPles  - prefix for the output placeholder navigation, default 'pn'
+ * direction - Left To Right (ltr) - default is 0 (zero) or 
+ *             Right To Left (rtl) for Arabic language
  *
  *  Caching Properties
- * cache              - Indicates if the content of each page request should be cached, 
+ * cache            - Indicates if the content of each page request should be cached, 
  *                    by a unique request URI (not just the pageVarKey)
- * cache_key_pn       - A key identifying a named xPDOCache instance to use for caching 
+ * cache_key_pn     - A key identifying a named xPDOCache instance to use for caching 
  *                    the page content, default 'pagenav'.
  * cache_expires_pn - Indicates the number of seconds for each item to live in the cache. 
  *                    Note that 0 indicates it will live in the cache until the cache is 
@@ -75,6 +88,7 @@ $textstart  = $modx->getOption('textstart',$properties,'1');
 $textend  = $modx->getOption('textend',$properties,NULL);
 $max_pages  = $modx->getOption('pageLimit',$properties,9);
 $pageNavTpl  = $modx->getOption('pageNavTpl',$properties,'pageNavTpl');
+$pageNavTplActive  = $modx->getOption('pageNavTplActive',$properties,'pageNavTplActive');
 $pageNavOutTpl  = $modx->getOption('pageNavOutTpl',$properties,'pageNavOutTpl');
 $tplActive = $modx->getOption('tplActive',$properties,NULL);
 $prefPles  = $modx->getOption('prefPles',$properties,'pn');
@@ -114,63 +128,83 @@ $output = $modx->getPlaceholder($toPlaceholder);
 
 /* Find the total number of pages */
 $total = intval(($posts - 1) / $limit) + 1; 
-if(empty($pageGet)) $pageGet = 1;
-/* if too large, then to the top */
-if($pageGet > $total) $modx->sendRedirect($modx->makeUrl($modx->resource->get('id')));
-/* Calculate the numbers from what should output messages */ 
-$start = $pageGet * $limit - $limit; 
-/* form a prefix depending on the Parameter friendly urls */
-$navUrl = isset($friendlyurls) ? '/page-' : '&page=';
 
-$lincpone = $modx->makeUrl($modx->resource->get('id'));
-$alias = $modx->resource->get('alias');
+$outPl = '';
+/* If the total number of pages is greater than one, then form the pagination pages */
+if($total > 1){
+  if(empty($pageGet)) $pageGet = 1;
+  /* if too large, then to the top */
+  if($pageGet > $total) $modx->sendRedirect($modx->makeUrl($modx->resource->get('id')));
+  /* Calculate the numbers from what should output messages */
+  $start = $pageGet * $limit - $limit;
+  /* form a prefix depending on the Parameter friendly urls */
+  $navUrl = isset($friendlyurls) ? '/page-' : '&page=';
+  
+  $lincpone = $modx->makeUrl($modx->resource->get('id'));
+  $alias = $modx->resource->get('alias');
+  
+  if(!isset($friendlyurls)) $lincponeNav = $lincpone.$navUrl;
+  
+  $totPgNav = $pgNavTotal > $total ?  $total : $pgNavTotal;
+  
+  $navPg = array();
+  $startp = $pageGet - ceil($max_pages / 2)+1;
+  $end = $pageGet + floor($max_pages / 2);
+  
+  /* build the first and last pages of reference output pagination, if the criteria are not suitable, it is not deduce */
+  if($startp <= 0){
+    $startp = 1;
+    $end = $max_pages > $total ? $total : $max_pages;
+  }
+  if($end >= $total){
+    $end = $total;
+    $startp = $end - $max_pages <=  0 ? 0 : $end - $max_pages + 1;
+  }
+  /* next button */
+  if($pageGet != $total){
+    $classnext = $classnext != '' ? ' class="'.$classnext.'"' : '';
+    $tplOut['outUlnext'] = $modx->getChunk($pageNavTpl,array(
+      'href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.($pageGet+1)) : $lincponeNav.($pageGet+1),
+      'classes'=>$classnext,
+      'pageNo'=>$textnext));
+  }
+  /* previos button */
+  if($pageGet != 1){
+    $classprev = $classprev != '' ? ' class="'.$classprev.'"' : '';
+    $tplOut['outUlprevios'] = $modx->getChunk($pageNavTpl,array(
+      'href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.($pageGet-1)) : $lincponeNav.($pageGet-1),
+      'classes'=>$classprev,
+      'pageNo'=>$textprev));
+  }
+  /* start button */
+  if($startp > 1){
+    $tplOut['outUlstart'] = $modx->getChunk($pageNavTpl,array(
+      'href'=>$lincpone, 'classes'=>$classp,
+      'pageNo'=>$textstart)).$separator;
+  }
+  /* end button */
+  if($end < $total){
+    $tplOut['outUlend'] = $separator.$modx->getChunk($pageNavTpl,array(
+      'href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.$total) : $lincponeNav.$total,
+      'classes'=>$classp,
+      'pageNo'=>isset($textend) ? $textend : $total));
+  }
+  /* create an array for all the other navigation buttons */
+  for($i = $startp; $i <= $end; $i ++) {
+    $classp = $i == $pageGet ? ' class="'.$classactive.'"' : $classpn;
+    $pNTpl = $i == $pageGet ? $tplActive : $pageNavTpl;
+    $navPg[] = $modx->getChunk($pNTpl,array(
+      'href'=>$i == 1 ? $lincpone : (isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.$i) : $lincponeNav.$i),
+      'classes'=>$classp,
+      'pageNo'=>$i));
+  }
+  /* Direction or PageNav : Left To Right (ltr) - default is 0 (zero) or Right To Left (rtl) for Arabic language */
+  if($direction != 0) array_reverse($navPg);
+  
+  $tplOut['navPg'] = implode("\r\n",$navPg);
+  $outPl = $modx->getChunk($pageNavOutTpl,$tplOut);
+}
 
-if(!isset($friendlyurls)) $lincponeNav = $lincpone.$navUrl;
-
-$totPgNav = $pgNavTotal > $total ?  $total : $pgNavTotal;
-
-$navPg = array();
-$startp = $pageGet - ceil($max_pages / 2)+1;
-$end = $pageGet + floor($max_pages / 2);
-
-/* build the first and last pages of reference output pagination, if the criteria are not suitable, it is not deduce */
-if($startp <= 0){
-  $startp = 1;
-  $end = $max_pages > $total ? $total : $max_pages;
-}
-if($end >= $total){
-  $end = $total;
-  $startp = $end - $max_pages <=  0 ? 0 : $end - $max_pages + 1;
-}
-/* next button */
-if($pageGet != $total){
-  $classnext = $classnext != '' ? ' class="'.$classnext.'"' : '';
-  $tplOut['outUlnext'] = $modx->getChunk($pageNavTpl,array('href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.($pageGet+1)) : $lincponeNav.($pageGet+1), 'classes'=>$classnext, 'pageNo'=>$textnext));
-}
-/* previos button */
-if($pageGet != 1){
-  $classprev = $classprev != '' ? ' class="'.$classprev.'"' : '';
-  $tplOut['outUlprevios'] = $modx->getChunk($pageNavTpl,array('href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.($pageGet-1)) : $lincponeNav.($pageGet-1), 'classes'=>$classprev, 'pageNo'=>$textprev));
-}
-/* start button */
-if($startp > 1){
-  $tplOut['outUlstart'] = $modx->getChunk($pageNavTpl,array('href'=>$lincpone, 'classes'=>$classp, 'pageNo'=>$textstart)).$separator;
-}
-/* end button */
-if($end < $total){
-  $tplOut['outUlend'] = $separator.$modx->getChunk($pageNavTpl,array('href'=>isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.$total) : $lincponeNav.$total, 'classes'=>$classp, 'pageNo'=>isset($textend) ? $textend : $total));  
-}
-/* create an array for all the other navigation buttons */
-for($i = $startp; $i <= $end; $i ++) {
-  $classp = $i == $pageGet ? ' class="'.$classactive.'"' : $classpn;
-  $pNTpl = isset($tplActive) && ($i == $pageGet) ? $tplActive : $pageNavTpl;
-  $navPg[] = $modx->getChunk($pNTpl,array('href'=>$i == 1 ? $lincpone : (isset($friendlyurls) ? $modx->resource->getAliasPath($alias.$navUrl.$i) : $lincponeNav.$i), 'classes'=>$classp, 'pageNo'=>$i));
-}
-/* Direction or PageNav : Left To Right (ltr) - default is 0 (zero) or Right To Left (rtl) for Arabic language */
-if($direction != 0) array_reverse($navPg);
-
-$tplOut['navPg'] = implode("\r\n",$navPg);
-$outPl = $modx->getChunk($pageNavOutTpl,$tplOut);
 $modx->setPlaceholder($prefPles.'nav',$outPl);
 /* add a page in the cache if there is an option */
 if ($modx->getCacheManager() && !$inCache && isset($cache)){

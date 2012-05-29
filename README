@@ -14,7 +14,7 @@ With support for User Friendly URL and without. Do not create duplicates url
 
 - pageNavTpl    - Name of a chunk serving as the key element of the template, default pageNavTpl
 - pageNavOutTpl - Name of a chunk serving as a general template, default pageNavOutTpl
-- tplActive     - Name of a chunk serving as active item of the template, default empty, use the basic template pageNavTpl
+- tplActive     - Name of a chunk serving as active item of the template, default tplActive
 
 ###Chunk pageNavTpl Parameters
 
