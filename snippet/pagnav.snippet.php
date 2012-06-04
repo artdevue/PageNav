@@ -158,7 +158,7 @@ if($total > 1){
   }
   if($end >= $total){
     $end = $total;
-    $startp = $end - $max_pages <=  0 ? 0 : $end - $max_pages + 1;
+    $startp = $end - $max_pages <=  0 ? 1 : $end - $max_pages + 1;
   }
   /* next button */
   if($pageGet != $total){
