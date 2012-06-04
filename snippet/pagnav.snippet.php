@@ -20,7 +20,7 @@
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @package PageNav
- * @version 0.0.1-beta2 - May 29, 2012
+ * @version 0.0.1-beta4 - June 5, 2012
  */
 /**
  * PageNav snippet to paginate results from your database in a clean and user friendly way.
@@ -92,11 +92,12 @@ $pageNavTplActive  = $modx->getOption('pageNavTplActive',$properties,'pageNavTpl
 $pageNavOutTpl  = $modx->getOption('pageNavOutTpl',$properties,'pageNavOutTpl');
 $tplActive = $modx->getOption('tplActive',$properties,NULL);
 $prefPles  = $modx->getOption('prefPles',$properties,'pn');
-$cache = $modx->getOption('cache',$properties,NULL);
-$cache_expires = $modx->getOption('cache_expires_pn',$properties,0);
-$cache_key = $modx->getOption('cache_key_pn', $properties, 'pagenav');
-$cache_handler = $modx->getOption('cache_handler_pn', $properties, 'xPDOFileCache');
 $friendlyurls = $modx->getOption('friendly_urls') == 1 ? true : NULL;
+/* cache */
+$cache = isset($cache) ? (boolean) $cache : (boolean) $modx->getOption('cache_resource', null, false);
+if (empty($cache_key)) $cache_key = $modx->getOption('cache_key_pn', null, 'pagenav/'.$modx->context->get('key'));
+if (empty($cache_handler)) $cache_handler = $modx->getOption('cache_handler_pn', null, $modx->getOption('cache_handler'));
+if (empty($cache_expires)) $cache_expires = (integer) $modx->getOption('cache_expires_pn', null, 0);
 
 /* data correction */
 $pageGet = intval($_REQUEST['page']);
@@ -108,19 +109,24 @@ if($prefPles != '') $prefPles = $prefPles.'.';
 if($classpn != '') $classpn = ' class="'.$classpn.'"';
 
 /* Work with the cache */
-if($modx->getCacheManager() && isset($cache)){
-  /* Creates a key, unique key will be created depending on the parameters passed to the function. */ 
-$keynav = md5('pagenav::'.implode(":",$properties));
-  if ($cachnav = $modx->cacheManager->get($keynav,array(
-    xPDO::OPT_CACHE_KEY => $cache_key))){
+if($modx->getCacheManager() && $cache){
+  /* Creates a key, unique key will be created depending on the parameters passed to the function. */
+  $keynav = md5('pagenav::'.implode(":",$properties).$pageGet);
+    $cacheOptions = array(
+        xPDO::OPT_CACHE_KEY => $cache_key,
+        xPDO::OPT_CACHE_HANDLER => $cache_handler,
+        xPDO::OPT_CACHE_EXPIRES => $cache_expires,
+    );
+  if ($cachnav = $modx->cacheManager->get($keynav,$cacheOptions)){
       /* If there is data in the cache, then we deduce */
       $modx->setPlaceholder($prefPles.'nav',$cachnav['outPl']);
+    print 'cache';
       return $cachnav['output'];
     }else{
+      print 'nocache';
       $inCache = false;
     }
 }
-
 /* run the snippet with the parameters */
 $postsRun = $modx->runSnippet($element,$properties);
 $posts = $modx->getPlaceholder($totalVar);
@@ -207,14 +213,10 @@ if($total > 1){
 
 $modx->setPlaceholder($prefPles.'nav',$outPl);
 /* add a page in the cache if there is an option */
-if ($modx->getCacheManager() && !$inCache && isset($cache)){
+if ($modx->getCacheManager() && !$inCache && $cache){
   $cachnav['outPl'] = $outPl;
   $cachnav['output'] = $output;
-  $modx->cacheManager->set($keynav, $cachnav,$cache_expires,array(
-    xPDO::OPT_CACHE_KEY => $cache_key,
-    xPDO::OPT_CACHE_HANDLER => $cache_handler,
-    xPDO::OPT_CACHE_EXPIRES => $cache_expires
-  ));
+  $modx->cacheManager->set($keynav, $cachnav,$cacheOptions[xPDO::OPT_CACHE_EXPIRES],$cacheOptions);
 }        
 
 return $output;

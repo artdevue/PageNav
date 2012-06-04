@@ -1,7 +1,7 @@
 <?php
 /**
  * @package pagenav
- * @version 0.0.1-beta2 - May 29, 2012
+ * @version 0.0.1-beta4 - June 5, 2012
  */
   switch ($modx->event->name) {    
     case 'OnPageNotFound':
@@ -24,20 +24,29 @@
       }
       $_REQUEST['page'] = $regpage;
       if($modx->getCacheManager()){
+	$cacheOptions = array(
+	  xPDO::OPT_CACHE_KEY => $modx->getOption('cache_resource_key', null, 'resource'),
+	  xPDO::OPT_CACHE_HANDLER => $modx->getOption('cache_handler', null, 'xPDOFileCache'),
+	  xPDO::OPT_CACHE_EXPIRES => (integer) $modx->getOption('cache_resource_expires', null, 0)
+	);
 	$keynp = md5('pagenav::'.$arrayURI[$coun-1]);
-	$idRsource = $modx->cacheManager->get($keynp);
-	if(!isset($idRsource)){
+	$inCache = false;
+	if($idRsource = $modx->cacheManager->get($keynp,$cacheOptions)) $inCache = true;
+	
+      }
+      if($modx->getCacheManager() && !$inCache){
 	  $resource = $modx->getObject('modResource',array('alias'=>$arrayURI[$coun-1]));
 	  $idRsource = $resource->get('id'); //20;
-	  $modx->cacheManager->set($keynp, $idRsource);
-	}
+	  $modx->cacheManager->set($keynp, $idRsource, $cacheOptions[xPDO::OPT_CACHE_EXPIRES],$cacheOptions);
       }
       if($regpage == 1) $modx->sendRedirect($modx->makeUrl($idRsource));
       $modx->sendForward($idRsource);
     }
     break;
     case 'OnSiteRefresh':
-    if($modx->cacheManager->clearCache(array('/pagenav')))
-    $modx->log(modX::LOG_LEVEL_INFO,'PageNac clear cache ok!');
+    //if($modx->cacheManager->clearCache(array('/pagenav')))
+    $modx->cacheManager->refresh();
+    if($modx->cacheManager->refresh(array('/pagenav'=> array())))
+      $modx->log(modX::LOG_LEVEL_INFO,'PageNav clear cache. '.$modx->lexicon('refresh_success'));
     break;
   }
