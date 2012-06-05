@@ -120,10 +120,8 @@ if($modx->getCacheManager() && $cache){
   if ($cachnav = $modx->cacheManager->get($keynav,$cacheOptions)){
       /* If there is data in the cache, then we deduce */
       $modx->setPlaceholder($prefPles.'nav',$cachnav['outPl']);
-    print 'cache';
       return $cachnav['output'];
     }else{
-      print 'nocache';
       $inCache = false;
     }
 }
