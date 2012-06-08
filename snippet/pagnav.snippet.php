@@ -20,7 +20,7 @@
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @package PageNav
- * @version 0.0.1-beta4 - June 5, 2012
+ * @version 0.0.1-beta6 - June 8, 2012
  */
 /**
  * PageNav snippet to paginate results from your database in a clean and user friendly way.
@@ -137,8 +137,8 @@ $outPl = '';
 /* If the total number of pages is greater than one, then form the pagination pages */
 if($total > 1){
   if(empty($pageGet)) $pageGet = 1;
-  /* if too large, then to the top */
-  if($pageGet > $total) $modx->sendRedirect($modx->makeUrl($modx->resource->get('id')));
+  /* if too large, the total */
+  if($pageGet > $total) $pageGet = $total;
   /* Calculate the numbers from what should output messages */
   $start = $pageGet * $limit - $limit;
   /* form a prefix depending on the Parameter friendly urls */
@@ -148,8 +148,6 @@ if($total > 1){
   $alias = $modx->resource->get('alias');
   
   if(!isset($friendlyurls)) $lincponeNav = $lincpone.$navUrl;
-  
-  $totPgNav = $pgNavTotal > $total ?  $total : $pgNavTotal;
   
   $navPg = array();
   $startp = $pageGet - ceil($max_pages / 2)+1;
