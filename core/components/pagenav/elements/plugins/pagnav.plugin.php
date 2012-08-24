@@ -47,6 +47,6 @@
     //if($modx->cacheManager->clearCache(array('/pagenav')))
     $modx->cacheManager->refresh();
     if($modx->cacheManager->refresh(array('/pagenav'=> array())))
-      $modx->log(modX::LOG_LEVEL_INFO,'PageNav clear cache. '.$modx->lexicon('refresh_success'));
+      $modx->log(modX::LOG_LEVEL_INFO,'PageNav clear cache. '.$modx->lexicon('refresh_success'));    
     break;
   }

@@ -1,0 +1,11 @@
+## 24 August 2012
+- REQUEST_URI can now contain the GET requests, for example /resources/page-5/?data=myData
+## 8 June 2012
+- Fixed a minor error, a non-existent variable
+## 5 June 2012
+- Fixed work with the cache.
+## 4 June 2012
+- Fixed pagination output for an even number of navigation controls.
+## 29 May 2012
+- do not display pagination. if the total number of pages is equal to one
+- added chunk, tplActive, for the active item pagination
