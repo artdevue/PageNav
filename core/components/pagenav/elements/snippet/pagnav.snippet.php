@@ -20,7 +20,7 @@
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @package PageNav
- * @version 0.0.1-beta6 - June 8, 2012
+ * @version 0.0.1-beta7 - August 24, 2012
  */
 /**
  * PageNav snippet to paginate results from your database in a clean and user friendly way.
@@ -107,6 +107,9 @@ $properties['toPlaceholder'] = $toPlaceholder;
 $properties['offset'] = !empty($pageGet) ? ($pageGet-1)*$limit : 0;
 if($prefPles != '') $prefPles = $prefPles.'.';
 if($classpn != '') $classpn = ' class="'.$classpn.'"';
+
+/* For use in conjunction with the component Gallery */
+$properties['start'] = $properties['offset'];
 
 /* Work with the cache */
 if($modx->getCacheManager() && $cache){
