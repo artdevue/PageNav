@@ -31,9 +31,9 @@ With support for User Friendly URL and without. Do not create duplicates url
 
 ###CSS Class Name Parameters
 - classpn     - Class for the elements of the navigation buttons, default empty
-- classprev   - Ñlass for elements prev buttons, default prev
-- classnext   - Ñlass for elements next buttons, default next
-- classactive - Ñlass for elements active buttons, default active
+- classprev   - Ã‘lass for elements prev buttons, default prev
+- classnext   - Ã‘lass for elements next buttons, default next
+- classactive - Ã‘lass for elements active buttons, default active
 - textprev    - The caption for the button prev, default < (&lt;)
 - textnext    - The caption for the button next, default > (&gt;)
 - textstart   - The caption for the button start, default 1
